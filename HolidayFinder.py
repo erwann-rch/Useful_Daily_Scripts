@@ -104,22 +104,25 @@ def findCode():
 
 #--------------------------------------------------
 # Function to get holidays days depending on the country/state code
-def findHolidays(year,code):
+def findHolidays(year, code):
     if "-" in code:  # Checking if subdivision code 
-        countryCode,subdivCode = code.split("-")
-        holidaysList =  holidays.CountryHoliday(countryCode, state=code, years=year)
+        countryCode, subdivCode = code.split("-")
+        holidaysList = holidays.CountryHoliday(countryCode, state=subdivCode, years=year)
     else:
         countryCode = code
         holidaysList = holidays.CountryHoliday(countryCode, state=None, years=year)
 
-    # Setting holidays' name in the list of holidays
-    filteredHolidays = holidaysList.copy()
-    for date in holidaysList.items(): 
-        if 0 <= date[0].weekday() <= 4:  # Check if the day is in the weekdays (weekend day is useless to look up)
-            lsDates["Holiday name"].append(date[1])
-        else :
-            filteredHolidays.pop(date[0])
-    return filteredHolidays  # filteredHolidays = {datetime object: str}
+    filteredHolidays = {}
+    for date, holidayName in holidaysList.items():
+        if 0 <= date.weekday() <= 4:  # Check if the day is a weekday (weekend day is not useful to look up)
+            filteredHolidays[holidayName] = date 
+
+    # Sort the dictionary by week number
+    sortedHolidays = dict(sorted(filteredHolidays.items(), key=lambda x: x[1].isocalendar()))
+     
+    lsDates["Holiday name"].extend(sortedHolidays.keys())  # Sort the properties of the table too
+    
+    return sortedHolidays  # filteredHolidays = {str: datetime object}
 
 #--------------------------------------------------
 # Function to calculate ranges for taking paid leaves
@@ -127,20 +130,20 @@ def makeRanges(dateList):
     rangesCoeff = []
     for date in dateList.items():  # Calculate number of days to add or subtract to have a range
         # print(days[date[0].weekday()])
-        if date[0].weekday() == 0:  # Monday
+        if date[1].weekday() == 0:  # Monday
             rangesCoeff.append((0, 4))  # Before and after weekdays left
-        elif date[0].weekday() == 1:  # Tuesday
+        elif date[1].weekday() == 1:  # Tuesday
             rangesCoeff.append((1, 3))
-        elif date[0].weekday() == 2:  # Wednesday
+        elif date[1].weekday() == 2:  # Wednesday
             rangesCoeff.append((2, 2))
-        elif date[0].weekday() == 3:  # Thursday
+        elif date[1].weekday() == 3:  # Thursday
             rangesCoeff.append((3, 1))
         else:  # Friday
             rangesCoeff.append((4, 0))
 
     rangesDates = []
     for i in range(len(rangesCoeff)):
-        currentHoliday = list(dateList.items())[i][0]  # datetime object of the list of tuple
+        currentHoliday = list(dateList.items())[i][1]  # datetime object of the list of tuple
         startDay = currentHoliday - timedelta(days=rangesCoeff[i][0])  # Start paid leave to take
         endDay = currentHoliday + timedelta(days=rangesCoeff[i][1])  # End paid leave to take
 
