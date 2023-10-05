@@ -40,6 +40,8 @@ def getArgs():
         exit()
 
     if options.code is not None:  # Check if code option is empty
+        if options.code != options.code.upper():
+            options.code = options.code.upper()    
         if pycountry.countries.get(alpha_2=options.code) is not None :  # Check if it's a country code
             if pycountry.subdivisions.get(country_code=options.code.split("-")[0]) is None :  # Check if it's a subdivision code
                 parser.error("\n    [-] Error in the command : please specify a valid state code or don't specify code")
