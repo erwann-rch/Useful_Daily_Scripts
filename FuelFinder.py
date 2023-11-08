@@ -19,20 +19,18 @@ filename = "InstantFuelPrice.xml"
 def getArgs():
     parser = argparse.ArgumentParser("python3 FuelFinder.py")  # Create an object to get args
     # Options of this program
-    parser.add_argument("-F", "-f", "--fuel", dest="fuel", help="Enter the fuel you want", type=str)
-    parser.add_argument("-C", "-c", "--city", dest="city", help="Enter the city or the zipcode you are")
-    parser.add_argument("-D", "-d", "--distance", dest="dist", help="Enter the distance you want", type=float)
+    parser.add_argument("-F", "-f", "--fuel", dest="fuel", help="Enter the fuel you want (default='SP95')", type=str)
+    parser.add_argument("-C", "-c", "--city", dest="city", help="Enter the address, the city or the zipcode you are")
+    parser.add_argument("-D", "-d", "--distance", dest="dist", help="Enter the distance you want (default=5)", type=float)
     options = parser.parse_args()
     #print(parser.parse_args())
     if options.fuel is not None:  # Check if fuel option is empty
-        if not options.fuel in ['SP98', 'SP95', 'Gazole', 'E10', 'E85', 'GPLc']:  # CHeck if the fuel is supported
+        if not options.fuel in ['SP98', 'SP95', 'Gazole', 'E10', 'E85', 'GPLc']:  # Check if the fuel is supported
             parser.error("\n    [-] Error in the command : please chose a fuel among : 'SP98' / 'SP95' / 'Gazole' / 'E10' / 'E85' / 'GPLc'")
             parser.error("Check -h or --help for help")
             exit()
-    else:
-        parser.error("\n    [-] Error in the command : please specify a fuel")
-        parser.error("Check -h or --help for help")
-        exit()
+    else:  # default value
+        options.fuel = "SP95"
 
     if options.city is None:  # Check if city option is empty
         parser.error("\n    [-] Error in the command : please specify a city")
@@ -44,10 +42,8 @@ def getArgs():
             parser.error("\n    [-] Error in the command : please specify a distance (in km) under 20")
             parser.error("Check -h or --help for help")
             exit()
-    else:
-        parser.error("\n    [-] Error in the command : please specify a distance (in km)")
-        parser.error("Check -h or --help for help")
-        exit()
+    else:  # default value
+        options.dist = 5
 
     return options
 
@@ -134,6 +130,7 @@ def main(fuel, coords, dist):
     download()
     # Available fuel: 'SP98' / 'SP95' / 'Gazole' / 'E10' / 'E85' / 'GPLc'
     availablePumps = pumpOrdering(registerPumps(filename, coords, dist), fuel)  # Determine which pumps are available
+    os.remove(filename)
     return ascOrder(availablePumps)  # Return ascendant order
 
 
@@ -146,18 +143,18 @@ options = getArgs()
 
 pumpList = main(options.fuel, getAddress(options.city)[1], options.dist)
 if len(pumpList) == 0:
-    print(f"     [-] There is no {options.fuel} in {options.dist}km around")
+    print(f"\t[-] There is no {options.fuel} in {options.dist}km around")
 
 for pump in pumpList:
     print("#----------#")
     for key in pump.keys():
         if type(pump[key]) != dict:
-            print(f"     [+] {key} : {pump[key]}")
+            print(f"\t[+] {key} : {pump[key]}")
         else:
-            print(f"     [+] {key} :")
+            print(f"\t[+] {key} :")
             for key2 in pump[key]:
                 if not key2 == 'Price':
-                    print(f"        [*] {key2} : {pump[key][key2]}")
+                    print(f"\t\t[*] {key2} : {pump[key][key2]}")
                 else:
-                    print(f"        [*] {key2} : {pump[key][key2]}€/L")
+                    print(f"\t\t[*] {key2} : {pump[key][key2]}€/L")
 
