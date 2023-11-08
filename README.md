@@ -1,5 +1,6 @@
 # Installation
 ```bash
+pip install --user virtualenv
 python3 -m venv Useful_Script_venv
 source Useful_Script_venv\bin\activate
 git clone https://github.com/erwann-rch/Useful_Daily_Scripts && cd Useful_Daily_Scripts
