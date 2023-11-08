@@ -33,7 +33,7 @@ def getArgs():
         options.fuel = "SP95"
 
     if options.city is None:  # Check if city option is empty
-        parser.error("\n    [-] Error in the command : please specify a city")
+        parser.error("\n    [-] Error in the command : please specify a city/zipcode/address")
         parser.error("Check -h or --help for help")
         exit()
 
